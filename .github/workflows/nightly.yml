@@ -1,0 +1,26 @@
+name: Deploy Nightly
+on:
+  schedule:
+    - cron: '0 0 * * *' # run at 2 AM UTC
+
+jobs:
+  nightly:
+    name: Deploy nightly
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Deploy Windows release
+        if: matrix.os == 'windows-latest'
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: https://uploads.github.com/repos/iKlsR/texturelab/releases/34084044/assets%7B?name,label}
+          release_id: 34084044 # same as above (id can just be taken out the upload_url, it's used to find old releases)
+          asset_path: ./myapp.zip # path to archive to upload
+          asset_name: myapp_windows-nightly-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
+          asset_content_type: application/zip # required by GitHub API
+          max_releases: 7 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
